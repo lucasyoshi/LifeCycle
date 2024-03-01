@@ -1,0 +1,167 @@
+﻿@page "/sales"
+<div class="row">
+    <div class="col">
+        <h1>Sales</h1>
+    </div>
+    <div class="col">
+        @{
+            @if (@hasFeedBack)
+            {
+                <div class="alert alert-success d-flex align-items-center w-75" role="alert">
+                    @feedBackMessage. Invoice number: @InvoiceNumber
+                </div>
+
+            }
+
+            @if (hasError)
+            {
+                <blockquote class="error">
+
+                    <ul class="w-75">
+                        <li class="list-group-item list-group-item-danger"><strong>Errors:</strong> @errorMessage</li>
+
+                        @foreach (var detail in errorDetails)
+                        {
+                            <li class="list-group-item list-group-item-danger">@detail</li>
+                        }
+                    </ul>
+                </blockquote>
+            }
+
+        }
+    </div>
+</div>
+
+
+
+<div class="row align-items-end mb-5">
+    <div class="col-sm-3">
+        <div class="form-group">
+            <label for="categories">Categories</label>
+            <select class="form-control" id="categories" @bind="@CategoryID" @bind:event="onchange">
+                <option value="">Category</option>
+                @foreach(var category in categoriesList)
+                {
+                    <option value="@category.CategoryID">@category.Description</option>
+                }
+
+            </select>
+            
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="form-group">
+            <label for="items">Items</label>
+            @if(CategoryID == 0)
+            {
+                ItemID = 0;
+            }
+            <select disabled="@(isCategoryChosen() == false)" class="form-control" id="items" @bind="@ItemID" @bind:event="onchange">
+                <option value="">Item (qty)</option>
+                @foreach(var item in itemsList)
+                {
+                    <option value="@item.PartID">@item.Description</option>
+                }
+
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-2">
+        @if (ItemID == 0)
+        {
+            Quantity = 0;
+        }
+        <label for="inputField">Quantity</label>
+        <input disabled="@(ItemID == 0)" @bind-value ="Quantity" type="text" class="form-control" id="inputField" placeholder="Enter Quantity">
+    </div>
+    <div class="col-sm-4">
+        <button @onclick="addItem" class="btn btn-primary">Add Item</button>
+        <button @onclick="clear" class="btn btn-danger">Clear</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-9">
+        <TableTemplate Context="SaleDetailView" Items="cart">
+            <TableHeader>
+                <th class="w-25">Item</th>
+                <th class="w-25" >Quantity</th>
+                <th class="w-25">Price</th>
+                <th class="w-25">Total</th>
+                <th>
+                    
+                    <button @onclick="updateItems" class="btn btn-success">Refresh</button>
+                </th>
+
+            </TableHeader>
+
+            <RowTemplate>
+                <td class="w-25">@SaleDetailView.Description</td>
+                <td class="w-25">
+                    <input @bind-value="@SaleDetailView.Quantity" type="text" class="form-control" id="inputField" >
+                </td>
+                <td class="w-25">@SaleDetailView.SellingPrice.ToString("C")</td>
+                <td class="w-25">@SaleDetailView.Total.ToString("C")</td>
+                <td>
+                    <button @onclick="() => removeItem(SaleDetailView)" class="btn btn-danger">remove</button>
+                </td>
+            </RowTemplate>
+</TableTemplate>
+    </div>
+    <div class="col-3 ">
+            <label for="coupon">Coupon</label>
+        <div class="input-group mb-3">
+            <input @bind-value="@Coupon" type="text" class="form-control" id="coupon">
+            <button @onclick="checkCoupon" type="button" class="btn btn-primary">Check Coupon</button>
+        </div>
+        @if(CouponDiscount > 0)
+        {
+            <p><em>You've unlocked @CouponDiscount percent off!</em></p>
+        }
+        @if (CouponDiscount == 0 && CouponAttempted)
+        {
+            <p><em>Invalid Coupon</em></p>
+        }
+        <div class="d-flex flex-column align-items-end ">
+            <div class="mb-3">
+                <label for="discount">Discount:</label>
+                <input disabled type="text" placeholder="@totalDiscount" id="discount" />
+            </div>
+
+            <div class="mb-3">
+                <label for="subTotal">SubTotal:</label>
+                <input disabled type="text" placeholder="@sale.SubTotal.ToString("C")" id="subTotal" />
+            </div>
+
+            <div class="mb-3">
+                <label for="tax">Tax:</label>
+                <input disabled type="text" placeholder="@sale.TaxAmount.ToString("C")" id="tax" />
+            </div>
+
+            <div class="mb-3">
+                <label for="total">Total:</label>
+                <input disabled type="text" placeholder="@((sale.SubTotal + sale.TaxAmount).ToString("C"))" id="total" />
+            </div>
+            <MatBlazor.MatDivider></MatBlazor.MatDivider>
+
+            <div class="mb-3">
+                <label for="paymentType">Payment Type:</label>
+                <select id="paymentType" @bind="@sale.PaymentType" @bind:event="onchange">
+                    <option value=""></option>
+                    <option value="C">Credit</option>
+                    <option value="D">Debit</option>
+                    <option value="M">Cash</option>
+                </select>
+                <button @onclick="checkout" class="btn btn-success">Checkout</button>
+                <p>@sale.PaymentType</p>
+            </div>
+        </div>
+        
+
+        
+    </div>
+    
+</div>
+
+<div>
+</div>

@@ -1,0 +1,114 @@
+﻿@page "/servicing"
+
+<div class="col-auto card shadow-sm p-3 h-100 w-150">
+    <h3>Servicing</h3>
+    <h5>Kierin Wanless</h5>
+</div>
+
+<div class="row p-2 align-items-center shadow-sm">
+    <div class="col">
+        <div class="row d-flex">
+            <h5>New</h5>
+            <button class="btn btn-outline-dark w-10"
+            onclick="@(()=> Clear())"
+            >Clear</button>
+            <button class="btn btn-outline-dark w-10"
+            onclick="@(()=> RegisterJob())"
+            >Register Job</button>
+        </div>
+
+        <div class="row">
+            <p>Customer</p>
+            <label for="customer-search">@customerName</label>
+            <input type="text" id="customer-search" class="form-control" @bind-value="@partialCustomerName" />
+            <button class="btn btn-outline-success"
+            onclick="@(()=> GetCustomers(partialCustomerName))"
+            >Search</button>
+        </div>
+
+        <div class="row">
+            <TableTemplate Items="customerList" Context="CustomerView">
+                <TableHeader>
+                    <th scope="col"></th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Address</th>
+                </TableHeader>
+                <RowTemplate>
+                    <td class="align-middle"><button class="btn btn-dark"
+                    onclick="@(()=> GetCustomerVehicles(CustomerView.CustomerID))"
+                    >Select</button></td>
+                    <td class="align-middle">@CustomerView.CustomerName</td>
+                    <td class="align-middle">@CustomerView.PhoneNumber</td>
+                    <td class="align-middle">@CustomerView.Address</td>
+                </RowTemplate>
+            </TableTemplate>
+        </div>
+
+        <div class="row">
+            <select class="form-select form-select-sm me-3" @bind="@vin" @bind:event="onchange">
+                <option value="" selected>Select</option>
+                @foreach (var vehicle in vehicleList)
+                {
+                    <option value=@vehicle.VIN>@vehicle.VehicleName</option>
+                }
+            </select>
+            <p>@vin</p>
+        </div>
+        
+    </div>
+
+    <div class="col">
+        <div class="row d-flex">
+            <label for="service-name">Service</label>
+            <input type="text" id="service-name" class="form-control" @bind-value="@serviceItem.ServiceName" />
+            <button id="add" class="btn btn-success w-10"
+            onclick="@Add">
+                Add</button>
+            <button id="reset" class="btn btn-warning w-10"
+            onclick="@Reset"
+            >Reset</button>
+        </div>
+        <div class="row">
+            <select class="form-select form-select-sm me-3">
+                <option value="" selected>Select</option>
+                @foreach (var service in standardServiceList)
+                {
+                    <option value=@service.StandardServiceID>@service.Description</option>
+                }
+            </select>
+            <button class="btn btn-outline-primary"
+            @*onclick=""*@
+            >Fill</button>
+        </div>
+
+        <div class="row">
+            <label for="hours">Hours</label>
+            <input id="hours" type="text" class="form-control" @bind-value="@serviceItem.ServiceHours" />
+        </div>
+
+        <div>
+            <label for="comment">Comments</label>
+            <textarea id="comment" class="form-control" @bind="@serviceItem.ServiceComment"></textarea>
+        </div>
+
+        <div class="row">
+            <TableTemplate Items="serviceList" Context="ServiceView">
+                <TableHeader>
+                    <th></th>
+                    <th>Service</th>
+                    <th>Hrs</th>
+                    <th>Comment</th>
+                </TableHeader>
+                <RowTemplate>
+                    <td class="align-middle"><button class="btn btn-danger"
+                        onclick="@(()=> Remove(ServiceView.ServiceName))"
+                    >X</button></td>
+                    <td class="align-middle">@ServiceView.ServiceName</td>
+                    <td class="align-middle">@ServiceView.ServiceHours</td>
+                    <td class="align-middle">@ServiceView.ServiceComment</td>
+                </RowTemplate>
+            </TableTemplate>
+        </div>
+    </div>
+</div>

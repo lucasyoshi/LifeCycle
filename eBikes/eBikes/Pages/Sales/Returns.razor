@@ -1,0 +1,18 @@
+﻿@page "/Sales/Returns"
+<h1>Returns</h1>
+
+<div class="row">
+    <div class="col">
+        <div class="input-group">
+            <input type="text" @bind-value="SaleID" class="form-control" placeholder="Sale Invoice #">
+            <button onclick="@GetSaleToReturn" class="btn btn-primary" type="button">Lookup Sale</button>
+        </div>
+    </div>
+    @*<div class="col-sm-6"></div>*@
+    <div class="col text-right">
+        <div class="btn-group ml-auto" role="group">
+            <button class="btn btn-danger" type="button">Clear</button>
+        </div>
+    </div>
+</div>
+

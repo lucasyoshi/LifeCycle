@@ -1,0 +1,167 @@
+﻿@page "/receiving"
+
+<div class="row p-2 align-items-center">
+    <div class="col-auto card shadow-sm p-3 h-100">
+
+        <h2>Receiving</h2>
+        <h4>By: Lucas Hashimoto</h4>
+
+    </div>
+    <div class="col">
+        @{
+            if (hasError)
+            {
+                <div class="alert alert-danger py-3 align-middle fs-6 h-100 m-0" role="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-exclamation-circle-fill" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+                    </svg> <span class="px-3 align-middle">Error - @feedback</span>
+                    <ul class="mt-3 list-group list-group-flush">
+                        @foreach (var detail in errorDetails)
+                        {
+                            <li class="list-group-item">@detail</li>
+                        }
+                    </ul>
+                </div>
+            }
+            if (hasFeedBack)
+            {
+                <div class="alert alert-success py-3 align-middle fs-6 h-100 m-0" role="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-exclamation-circle-fill" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+                    </svg> <span class="px-3 align-middle">@goodFeedback</span>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<div class="container-fluid py-3 card table-responsive shadow-sm">
+    <h3>Outstanding Orders</h3>
+    <TableTemplate Items="outstandingOrderViews" Context="OutstandingOrderView">
+        <TableHeader>
+            <th scope="col">PO#</th>
+            <th scope="col">Date</th>
+            <th scope="col">Vendor</th>
+            <th scope="col">Contact</th>
+            <th scope="col">View</th>
+        </TableHeader>
+        <RowTemplate>
+            <th class="align-middle" scope="row">@OutstandingOrderView.PurchaseOrderID</th>
+            <td class="align-middle">
+                @(OutstandingOrderView.OrderDate.HasValue ? OutstandingOrderView.OrderDate : "No order date") 
+            </td>
+            <td class="align-middle">@OutstandingOrderView.VendorName</td>
+            <td class="align-middle">@OutstandingOrderView.VendorContact</td>
+            <td class="align-middle">
+                <button class="btn btn-outline-dark"
+                        onclick="@(() => GetOrderDetails(OutstandingOrderView.PurchaseOrderID))">
+                    View Order
+                </button>
+                </td>
+        </RowTemplate>
+    </TableTemplate>
+</div>
+<div class="container-fluid py-3 my-3 card shadow-sm">
+    <h3>Outstanding Order Details</h3>
+
+    <div class="row py-3">
+        <div class="col-auto fs-4">
+            <span class="fw-bold">PO#</span> @purchaseOrderID
+        </div>
+        <div class="col-auto fs-4">
+            <span class="fw-bold">Vendor:</span> @outstandingOrderViews.Where(x => x.PurchaseOrderID == purchaseOrderID).Select(x => x.VendorName).FirstOrDefault()
+        </div>
+        <div class="col-auto fs-4">
+            <span class="fw-bold">Vendor Phone:</span> @outstandingOrderViews.Where(x => x.PurchaseOrderID == purchaseOrderID).Select(x => x.VendorContact).FirstOrDefault()
+        </div>
+    </div>
+
+    <TableTemplate Items="poDetails" Context="PurchaseOrderDetailsView">
+        <TableHeader>
+            <th scope="col">Part ID</th>
+            <th scope="col">Description</th>
+            <th scope="col">O/Qty</th>
+            <th scope="col">O.Std/Qty</th>
+            <th scope="col">ReceivedQty</th>
+            <th scope="col">ReturnQty</th>
+            <th scope="col">Reason</th>
+        </TableHeader>
+        <RowTemplate>
+            <th class="align-middle" scope="row">@PurchaseOrderDetailsView.PartID</th>
+            <td class="align-middle">@PurchaseOrderDetailsView.PartDescription</td>
+            <td class="align-middle">@PurchaseOrderDetailsView.OriginalQty</td>
+            <td class="align-middle">@PurchaseOrderDetailsView.OutstandingQty</td>
+            <td class="align-middle"><input type="number" id="receivedQty102" class="form-control" placeholder="E.g. 2" @bind-value="@PurchaseOrderDetailsView.ReceivedQty" /></td>
+            <td class="align-middle"><input type="number" id="returnedQty102" class="form-control" placeholder="E.g. 0" @bind-value="@PurchaseOrderDetailsView.ReturnQty" /></td>
+            <td class="align-middle"><input type="text" id="reason102" class="form-control" placeholder="Over shipped" @bind-value="@PurchaseOrderDetailsView.ReturnReason"/></td>
+        </RowTemplate>
+    </TableTemplate>
+
+    <div class="row py-3">
+        <div class="col align-middle">
+            <button type="button" class="btn btn-outline-success w-100 h-100" onclick="@Receive" disabled="@hasPurchaseOrderID">Receive</button>
+        </div>
+        <div class="col align-middle">
+            <button type="button" class="btn btn-outline-danger w-100 h-100" onclick="@ForceClose" disabled="@hasPurchaseOrderID">Force Close</button>
+        </div>
+        <div class="col-8 d-flex align-middle">
+            <label for="force-close" class="form-label">Reason for closing:</label>
+            <input type="text" id="force-close" class="form-control" disabled="@hasPurchaseOrderID" @bind-value="@reasonForClosing" />
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-3 card shadow-sm mb-3">
+    <h3>Unordered Items</h3>
+    <form>
+        <div class="row py-3">
+            <div class="col-3 fs-5">
+                <label class="form-label" for="item-description">Item Description</label>
+                <input class="form-control" type="text" name="item-description" id="item-description" required @bind-value="@unorderedItem.ItemDescription" disabled="@hasPurchaseOrderID" />
+            </div>
+            <div class="col fs-5">
+                <label class="form-label" for="vendor-part-number">Vendor Part Number</label>
+                <input class="form-control" type="text" name="vendor-part-number" id="vendor-part-number" required @bind-value="@unorderedItem.VendorPartNumber" disabled="@hasPurchaseOrderID" />
+            </div>
+            <div class="col fs-5">
+                <label class="form-label" for="quantity">Quantity</label>
+                <input class="form-control" type="number" name="quantity" id="quantity" required @bind-value="@unorderedItem.Quantity" disabled="@hasPurchaseOrderID"/>
+            </div>
+            <div class="col fs-5 mt-4">
+                <button type="button" class="btn btn-outline-dark h-100" onclick="@Add" disabled="@hasPurchaseOrderID">Add</button>
+                <button type="button" class="btn btn-outline-dark h-100" onclick="@Clear" disabled="@hasPurchaseOrderID">Clear</button>
+            </div>
+        </div>
+    </form>
+    @if(unorderedItems.Any())
+    {
+        <TableTemplate Items="unorderedItems" Context="UnorderedItemView">
+            <TableHeader>
+                <th scope="col">Description</th>
+                <th scope="col">Vendor Part #</th>
+                <th scope="col">Quantity</th>
+                <th scope="col"></th>
+            </TableHeader>
+            <RowTemplate>
+                <th class="align-middle" scope="row">@UnorderedItemView.ItemDescription</th>
+                <td class="align-middle">@UnorderedItemView.VendorPartNumber</td>
+                <td class="align-middle">@UnorderedItemView.Quantity</td>
+                <td class="align-middle">
+                    <button class="btn btn-outline-dark w-100 h-100"
+                            onclick="@(() => Delete(@UnorderedItemView.CartId))"
+                            disabled="@hasPurchaseOrderID">
+                        Delete
+                    </button>
+                </td>
+            </RowTemplate>
+        </TableTemplate>
+    }
+    else
+    {
+        <p class="h5 py-3">No records were found in the Unordered Items Cart Table.</p>
+    }
+</div>
+
+@code {
+
+}

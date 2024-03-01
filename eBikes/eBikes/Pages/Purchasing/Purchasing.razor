@@ -1,0 +1,164 @@
+﻿@page "/purchasing"
+
+<div class="row p-2 align-items-center">
+    <div class="col-auto card shadow-sm p-3 h-100">
+
+        <h2>Purchasing</h2>
+        <h4>By: Marina Riad</h4>
+
+    </div>
+    <div class="col">
+        @{
+            @if (@hasFeedBack)
+            {
+                <div class="alert alert-success d-flex align-items-center w-75" role="alert">
+                    @feedBackMessage
+                </div>
+    
+            }
+
+            @if (hasError)
+            {
+                <blockquote class="error">
+           
+                    <ul class="w-75">
+                        <li class="list-group-item list-group-item-danger"><strong>Errors:</strong> @errorMessage</li>
+
+                        @foreach (var detail in errorDetails)
+                        {
+                            <li class="list-group-item list-group-item-danger">@detail</li>
+                        }
+                    </ul>
+                </blockquote>
+            }         
+        }
+    </div>
+</div>
+<div class="row p-2">
+    <div class="input-group mb-2" style="width:auto;">
+        <select class="form-select form-select-sm me-3" aria-label=".form-select-sm example" @bind="@vendorID" @bind:event="onchange">
+            <option value="0" selected>Select a vendor</option>
+            @foreach (var vendor in vendorsList)
+            {
+                <option value=@vendor.VendorID>@vendor.VendorName</option>
+            }
+        </select>
+        <button type="button" class="btn btn-outline-secondary" fdprocessedid="91xbl2" onclick="@DisplayOrderAndInventory">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+            </svg>
+            <span class="visually-hidden">Search Vendor</span>
+        </button>
+        <button type="button" class="btn btn-outline-danger w-auto h-auto mx-2" onclick="@ClearForm">
+            Clear Form
+        </button>
+ 
+    </div>
+    @if (vendorID != 0)
+    {
+        <div class="col-auto d-flex">
+            <p class="mx-3"><strong>Phone:</strong> @selectedVendor.HomePhone</p>
+            <p><strong>City:</strong> @selectedVendor.City</p>
+        </div>
+    }
+</div>
+
+<div class="container-fluid py-3 card table-responsive shadow-sm">
+    <h3>PO&#35;: @(purchaseOrder.PurchaseOrderNum == 0 ? "" : purchaseOrder.PurchaseOrderNum)</h3>
+     <div class="d-flex my-2 text-center fs-5 align-items-center">
+        <p><strong>GST:</strong> @(String.Format("{0:0.00}", purchaseOrder.GST))</p>
+        <p class="mx-3"><strong>Subtotal:</strong> @(String.Format("{0:0.00}", purchaseOrder.SubTotal))</p>
+        <p><strong>Total:</strong> @(String.Format("{0:0.00}", purchaseOrder.Total))</p>
+        <button type="button" class="btn btn-outline-secondary mx-3 mb-3" fdprocessedid="xj0co" onclick="@Refresh">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"></path>
+                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"></path>
+            </svg>
+            <span class="visually-hidden">Refresh Total</span>
+        </button>
+        </div>
+   
+    <div class="my-2"> 
+        <button type="button" class="btn btn-outline-success w-auto h-auto" 
+        onclick="@SaveOrder">
+        @(purchaseOrder.PurchaseOrderNum > 0 ? "Update Order" : "New Order")</button>
+        <button type="button" class="btn btn-outline-success w-auto h-auto mx-3" onclick="@PlaceOrder" >
+            Place Order
+        </button>
+        <button type="button" class="btn btn-outline-danger w-auto h-auto" onclick="@DeleteOrder" disabled="@(!hasPurchaseOrder)">
+            Delete Order
+        </button>
+    </div>
+     @if(purchaseOrder != null)
+     {
+        <TableTemplate Items="@purchaseOrder.PurchaseOrderDetails" Context="poDetails">
+            <TableHeader>
+                <th scope="col">Remove</th>
+                <th scope="col">ID</th>
+                <th scope="col">Description</th>
+                <th scope="col">QOH</th>
+                <th scope="col">ROL</th>
+                <th scope="col">QOO</th>
+                <th scope="col">QTO</th>
+                <th scope="col">Price</th>
+
+            </TableHeader>
+            <RowTemplate>
+                <td class="align-middle" scope="row">
+                    <button type="button" class="btn btn-secondary" fdprocessedid="dbn43" @onclick="(()=>RemoveItem(poDetails.PartID))">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"></path>
+                        </svg>
+                    </button>
+                </td>
+                <td class="align-middle">@poDetails.PartID</td>
+                <td class="align-middle">@poDetails.PartDescription</td>
+                <td class="align-middle">@poDetails.QOH</td>
+                <td class="align-middle">@poDetails.ROL</td>
+                <td class="align-middle">@poDetails.QOO</td>
+                <td class="align-middle">
+                    <input type="number" class="form-control" @bind-value="@poDetails.QTO" />
+                </td>
+                <td class="align-middle">
+                    <input type="number" class="form-control" @bind-value="@poDetails.Price" />
+                </td>
+            </RowTemplate>
+        </TableTemplate>
+     }
+      
+    </div>
+    @if(inventoryView != null)
+    {
+    <div class="container-fluid py-3 card table-responsive shadow-sm">
+        <h3>Inventory</h3>
+        <TableTemplate Items="@inventoryView" Context="inventoryItem">
+            <TableHeader>
+                <th scope="col">ID</th>
+                <th scope="col">Description</th>
+                <th scope="col">QOH</th>
+                <th scope="col">ROL</th>
+                <th scope="col">QOO</th>
+                <th scope="col">Buffer</th>
+                <th scope="col">Price</th>
+                <th scope="col">Add</th>
+            </TableHeader>
+            <RowTemplate>
+
+                <td class="align-middle">@inventoryItem.PartID</td>
+                <td class="align-middle">@inventoryItem.PartDescription</td>
+                <td class="align-middle">@inventoryItem.QOH</td>
+                <td class="align-middle">@inventoryItem.ROL</td>
+                <td class="align-middle">@inventoryItem.QOO</td>
+                <td class="align-middle">@inventoryItem.Buffer</td>
+                <td class="align-middle">@inventoryItem.Price</td>
+                <td class="align-middle" scope="row">
+                    <button type="button" class="btn btn-secondary" fdprocessedid="0awgs" @onclick="(()=>AddItem(inventoryItem.PartID))">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"></path>
+                        </svg>
+                    </button>
+                </td>
+            </RowTemplate>
+        </TableTemplate>
+    </div>
+    }
